@@ -1,0 +1,220 @@
+{% extends "base.html" %}
+
+{% block title %}🛒 POS — {{ product.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .product-detail-wrapper {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 40px;
+        align-items: start;
+    }
+
+    .product-image-showcase {
+        background: white;
+        border-radius: 12px;
+        border: 1px solid var(--border-light);
+        padding: 40px;
+        text-align: center;
+        position: sticky;
+        top: 100px;
+    }
+
+    .product-image-large {
+        max-width: 100%;
+        max-height: 500px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+
+    .product-placeholder-large {
+        font-size: 8em;
+        color: #cbd5e0;
+        margin: 40px 0;
+    }
+
+    .product-details-section {
+        background: white;
+        border-radius: 12px;
+        border: 1px solid var(--border-light);
+        padding: 32px;
+    }
+
+    .product-name-detail {
+        font-size: 2.2em;
+        font-weight: 700;
+        color: var(--text-dark);
+        margin-bottom: 12px;
+    }
+
+    .product-category-detail {
+        display: inline-block;
+        padding: 8px 14px;
+        background: var(--info);
+        color: white;
+        border-radius: 20px;
+        font-size: 0.95em;
+        font-weight: 600;
+        margin-bottom: 24px;
+    }
+
+    .product-price-detail {
+        font-size: 2.5em;
+        font-weight: 700;
+        color: var(--success);
+        margin-bottom: 8px;
+    }
+
+    .product-meta {
+        display: grid;
+        gap: 16px;
+        margin: 32px 0;
+        padding: 24px;
+        background: var(--bg-light);
+        border-radius: 8px;
+    }
+
+    .meta-item {
+        display: grid;
+        grid-template-columns: 120px 1fr;
+        gap: 16px;
+        align-items: center;
+    }
+
+    .meta-label {
+        font-weight: 600;
+        color: var(--text-dark);
+        font-size: 0.95em;
+    }
+
+    .meta-value {
+        color: var(--text-gray);
+        font-size: 0.95em;
+    }
+
+    .stock-status {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        border-radius: 8px;
+        font-weight: 600;
+    }
+
+    .stock-status.in-stock {
+        background: #d1fae5;
+        color: var(--success);
+    }
+
+    .stock-status.low-stock {
+        background: #fef3c7;
+        color: var(--warning);
+    }
+
+    .stock-status.out-of-stock {
+        background: #fee2e2;
+        color: var(--danger);
+    }
+
+    .back-nav {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--primary);
+        text-decoration: none;
+        font-weight: 600;
+        margin-bottom: 20px;
+        transition: all 0.3s ease;
+    }
+
+    .back-nav:hover {
+        color: var(--primary-dark);
+        transform: translateX(-4px);
+    }
+
+    @media (max-width: 1024px) {
+        .product-detail-wrapper {
+            grid-template-columns: 1fr;
+            gap: 24px;
+        }
+
+        .product-image-showcase {
+            position: relative;
+            top: auto;
+        }
+
+        .product-detail-wrapper {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<a href="/sales/products/" class="back-nav">← Back to Products</a>
+
+<div class="product-detail-wrapper">
+    <div class="product-image-showcase">
+        {% if product.image %}
+            <img src="{{ product.image.url }}" alt="{{ product.name }}" class="product-image-large">
+        {% else %}
+            <div class="product-placeholder-large">📦</div>
+        {% endif %}
+    </div>
+
+    <div class="product-details-section">
+        <h1 class="product-name-detail">{{ product.name }}</h1>
+        <span class="product-category-detail">{{ product.get_category_display }}</span>
+
+        <div class="product-price-detail">${{ product.price }}</div>
+
+        <div class="product-meta">
+            <div class="meta-item">
+                <div class="meta-label">Category</div>
+                <div class="meta-value">{{ product.get_category_display }}</div>
+            </div>
+
+            {% if product.barcode %}
+            <div class="meta-item">
+                <div class="meta-label">Barcode</div>
+                <div class="meta-value">🔖 {{ product.barcode }}</div>
+            </div>
+            {% endif %}
+
+            <div class="meta-item">
+                <div class="meta-label">Stock</div>
+                <div class="meta-value">
+                    {% if product.stock == 0 %}
+                        <span class="stock-status out-of-stock">❌ Out of Stock</span>
+                    {% elif product.stock <= 5 %}
+                        <span class="stock-status low-stock">⚠️ Low Stock: {{ product.stock }} units</span>
+                    {% else %}
+                        <span class="stock-status in-stock">✓ {{ product.stock }} units in stock</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="meta-item">
+                <div class="meta-label">Status</div>
+                <div class="meta-value">
+                    {% if product.is_active %}
+                        <span class="badge badge-success">🟢 Active</span>
+                    {% else %}
+                        <span class="badge badge-danger">🔴 Inactive</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="btn-group">
+            <a href="/sales/orders/new/" class="btn btn-primary">
+                ➕ Add to New Order
+            </a>
+            <a href="/sales/products/" class="btn" style="background: var(--bg-gray); color: var(--text-dark); border: 1px solid var(--border-gray);">
+                ← Back to Catalog
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

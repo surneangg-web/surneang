@@ -1,0 +1,274 @@
+{% extends "base.html" %}
+{% load custom_filters %}
+
+{% block title %}🧾 POS — Orders{% endblock %}
+
+{% block extra_css %}
+<style>
+    .order-list-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 28px;
+    }
+
+    .order-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 16px;
+        margin-bottom: 28px;
+    }
+
+    .stat-box {
+        background: white;
+        padding: 20px;
+        border-radius: 12px;
+        border: 1px solid var(--border-light);
+        text-align: center;
+    }
+
+    .stat-icon {
+        font-size: 2em;
+        margin-bottom: 8px;
+    }
+
+    .stat-number {
+        font-size: 1.8em;
+        font-weight: 700;
+        color: var(--primary);
+        margin-bottom: 4px;
+    }
+
+    .stat-label {
+        color: var(--text-gray);
+        font-size: 0.9em;
+    }
+
+    .table-wrapper {
+        background: white;
+        border-radius: 12px;
+        border: 1px solid var(--border-light);
+        overflow: hidden;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    th {
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+        color: white;
+        padding: 16px;
+        text-align: left;
+        font-weight: 600;
+        font-size: 0.95em;
+    }
+
+    td {
+        padding: 16px;
+        border-bottom: 1px solid var(--border-light);
+    }
+
+    tbody tr:hover {
+        background: var(--bg-light);
+    }
+
+    tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    .order-number {
+        font-weight: 700;
+        color: var(--primary);
+        font-size: 1.05em;
+    }
+
+    .order-status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 0.9em;
+        font-weight: 600;
+    }
+
+    .status-open {
+        background: #fef3c7;
+        color: var(--warning);
+    }
+
+    .status-paid {
+        background: #d1fae5;
+        color: var(--success);
+    }
+
+    .status-refunded {
+        background: #e9d5ff;
+        color: #7c3aed;
+    }
+
+    .status-cancelled {
+        background: #f3f4f6;
+        color: var(--text-gray);
+        text-decoration: line-through;
+    }
+
+    .order-amount {
+        font-weight: 700;
+        color: var(--success);
+        font-size: 1.05em;
+    }
+
+    .order-items-count {
+        background: var(--info);
+        color: white;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 0.85em;
+        font-weight: 600;
+        display: inline-block;
+        min-width: 50px;
+        text-align: center;
+    }
+
+    .empty-state-orders {
+        text-align: center;
+        padding: 60px 20px;
+        background: white;
+        border-radius: 12px;
+        border: 1px solid var(--border-light);
+    }
+
+    .empty-state-icon {
+        font-size: 4em;
+        margin-bottom: 16px;
+    }
+
+    .empty-state-text {
+        color: var(--text-gray);
+        font-size: 1.1em;
+        margin-bottom: 20px;
+    }
+
+    .order-date {
+        color: var(--text-gray);
+        font-size: 0.9em;
+    }
+
+    .cashier-name {
+        font-weight: 500;
+        color: var(--text-dark);
+    }
+
+    .page-header-with-action {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 32px;
+    }
+
+    .page-header-content {
+        flex: 1;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header-with-action">
+    <div class="page-header-content">
+        <h1 class="page-title">🧾 Orders & Sales</h1>
+        <p class="page-subtitle">{{ orders|length }} orders recorded in the system</p>
+    </div>
+    <a href="/sales/orders/new/" class="btn btn-primary" style="margin-left: 24px;">
+        <span>➕</span> New Order
+    </a>
+</div>
+
+<!-- Statistics -->
+{% if orders %}
+<div class="order-stats">
+    <div class="stat-box">
+        <div class="stat-icon">📊</div>
+        <div class="stat-number">{{ orders|length }}</div>
+        <div class="stat-label">Total Orders</div>
+    </div>
+    <div class="stat-box">
+        <div class="stat-icon">💰</div>
+        <div class="stat-number">${{ orders|sum_field:'total'|floatformat:2 }}</div>
+        <div class="stat-label">Total Revenue</div>
+    </div>
+    <div class="stat-box">
+        <div class="stat-icon">✓</div>
+        <div class="stat-number">{{ orders|dictsort:'status'|length }}</div>
+        <div class="stat-label">Completed</div>
+    </div>
+    <div class="stat-box">
+        <div class="stat-icon">🎁</div>
+        <div class="stat-number">{{ orders|count_with_discount }}</div>
+        <div class="stat-label">With Discount</div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Orders Table -->
+{% if orders %}
+<div class="table-wrapper">
+    <table>
+        <thead>
+            <tr>
+                <th>Order</th>
+                <th>Cashier</th>
+                <th>Date & Time</th>
+                <th>Status</th>
+                <th>Items</th>
+                <th>Discount</th>
+                <th>Amount</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for order in orders %}
+            <tr>
+                <td><span class="order-number">#{{ order.pk }}</span></td>
+                <td><span class="cashier-name">{{ order.cashier }}</span></td>
+                <td><span class="order-date">{{ order.created_at|date:"M d, Y · H:i" }}</span></td>
+                <td>
+                    <span class="order-status-badge status-{{ order.status }}">
+                        {% if order.status == 'open' %}
+                            ⏳ Open
+                        {% elif order.status == 'paid' %}
+                            ✓ Paid
+                        {% elif order.status == 'refunded' %}
+                            ↩️ Refunded
+                        {% elif order.status == 'cancelled' %}
+                            ✕ Cancelled
+                        {% endif %}
+                    </span>
+                </td>
+                <td><span class="order-items-count">{{ order.items.count }} items</span></td>
+                <td>
+                    {% if order.discount %}
+                        <span style="background: #fef3c7; color: var(--warning); padding: 6px 12px; border-radius: 20px; font-weight: 600; font-size: 0.9em; display: inline-block;">
+                            💰 -${{ order.discount.amount }}
+                        </span>
+                    {% else %}
+                        <span style="color: var(--text-gray); font-size: 0.9em;">—</span>
+                    {% endif %}
+                </td>
+                <td><span class="order-amount">${{ order.total }}</span></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="empty-state-orders">
+    <div class="empty-state-icon">📭</div>
+    <div class="empty-state-text">No orders yet</div>
+    <a href="/sales/orders/new/" class="btn btn-primary">
+        ➕ Create First Order
+    </a>
+</div>
+{% endif %}
+{% endblock %}

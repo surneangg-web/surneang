@@ -1,0 +1,479 @@
+{% extends "base.html" %}
+
+{% block title %}Order #{{ order.pk }} — Add Items{% endblock %}
+
+{% block extra_css %}
+<style>
+    .order-header {
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        gap: 24px;
+        align-items: center;
+        background: white;
+        padding: 24px;
+        border-radius: 12px;
+        border: 1px solid var(--border-light);
+        margin-bottom: 28px;
+    }
+
+    .order-number {
+        font-size: 1.8em;
+        font-weight: 700;
+        color: var(--primary);
+    }
+
+    .order-info {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .order-info-label {
+        color: var(--text-gray);
+        font-size: 0.9em;
+    }
+
+    .order-info-value {
+        font-weight: 600;
+        color: var(--text-dark);
+    }
+
+    .order-status {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 16px;
+        background: var(--info);
+        color: white;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.9em;
+    }
+
+    .items-section {
+        background: white;
+        border-radius: 12px;
+        border: 1px solid var(--border-light);
+        overflow: hidden;
+        margin-bottom: 28px;
+    }
+
+    .items-header {
+        background: var(--primary);
+        color: white;
+        padding: 16px 24px;
+        font-weight: 600;
+        display: grid;
+        grid-template-columns: 2fr 0.8fr 1fr 1fr 0.5fr;
+        gap: 12px;
+        align-items: center;
+        font-size: 0.95em;
+    }
+
+    .items-list {
+        display: grid;
+        grid-template-columns: 2fr 0.8fr 1fr 1fr 0.5fr;
+        gap: 12px;
+        align-items: center;
+        padding: 16px 24px;
+        border-bottom: 1px solid var(--border-light);
+    }
+
+    .items-list:last-child {
+        border-bottom: none;
+    }
+
+    .items-list:nth-child(even) {
+        background: var(--bg-light);
+    }
+
+    .item-product-name {
+        font-weight: 600;
+        color: var(--text-dark);
+    }
+
+    .item-quantity {
+        text-align: center;
+        font-weight: 600;
+    }
+
+    .item-price {
+        text-align: right;
+        color: var(--text-gray);
+    }
+
+    .item-subtotal {
+        text-align: right;
+        font-weight: 600;
+        color: var(--success);
+        font-size: 1.05em;
+    }
+
+    .items-empty {
+        padding: 32px;
+        text-align: center;
+        color: var(--text-gray);
+    }
+
+    .order-summary {
+        background: white;
+        border-radius: 12px;
+        border: 1px solid var(--border-light);
+        padding: 24px;
+        margin-bottom: 28px;
+    }
+
+    .summary-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 0;
+        border-bottom: 1px solid var(--border-light);
+        font-size: 0.95em;
+    }
+
+    .summary-row:last-child {
+        border-bottom: none;
+    }
+
+    .summary-label {
+        color: var(--text-gray);
+        font-weight: 500;
+    }
+
+    .summary-value {
+        font-weight: 600;
+        color: var(--text-dark);
+    }
+
+    .summary-total {
+        padding: 16px 0;
+        border-top: 2px solid var(--primary);
+        margin-top: 12px;
+        font-size: 1.3em;
+    }
+
+    .summary-total .summary-label {
+        color: var(--text-dark);
+        font-size: 1.1em;
+    }
+
+    .summary-total .summary-value {
+        color: var(--success);
+        font-size: 1.4em;
+    }
+
+    .add-item-form {
+        background: white;
+        border-radius: 12px;
+        border: 1px solid var(--border-light);
+        padding: 24px;
+        margin-bottom: 28px;
+    }
+
+    .add-item-title {
+        font-size: 1.1em;
+        font-weight: 600;
+        color: var(--text-dark);
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .form-fields-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 16px;
+        margin-bottom: 16px;
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 12px;
+        margin-top: 20px;
+    }
+
+    .checkout-actions {
+        display: flex;
+        gap: 12px;
+        margin-top: 28px;
+    }
+
+    .alert-container {
+        margin-bottom: 20px;
+    }
+
+    .discount-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 14px;
+        background: linear-gradient(135deg, var(--warning) 0%, #fb923c 100%);
+        color: white;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.9em;
+        margin-left: auto;
+    }
+
+    .discount-section {
+        background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+        border-radius: 12px;
+        border: 1px solid var(--warning);
+        padding: 24px;
+        margin-bottom: 28px;
+    }
+
+    .discount-section.empty {
+        background: white;
+        border: 2px dashed var(--border-gray);
+    }
+
+    .discount-title {
+        font-size: 1.1em;
+        font-weight: 600;
+        color: var(--text-dark);
+        margin-bottom: 16px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .discount-applied {
+        background: white;
+        border-radius: 8px;
+        padding: 16px;
+        margin-bottom: 16px;
+    }
+
+    .discount-applied-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+    }
+
+    .discount-applied-label {
+        font-weight: 600;
+        color: var(--text-dark);
+    }
+
+    .discount-applied-value {
+        font-size: 1.3em;
+        font-weight: 700;
+        color: var(--success);
+    }
+
+    .discount-applied-description {
+        color: var(--text-gray);
+        font-size: 0.9em;
+        margin-top: 8px;
+    }
+
+    .discount-remove-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 14px;
+        background: var(--danger);
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-weight: 600;
+        cursor: pointer;
+        font-size: 0.9em;
+        transition: all 0.3s ease;
+    }
+
+    .discount-remove-btn:hover {
+        background: #b91c1c;
+    }
+
+    .discount-form-fields {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 12px;
+        margin-bottom: 12px;
+    }
+
+    .discount-form-fields .form-group {
+        margin-bottom: 0;
+    }
+
+    .discount-amount-input {
+        max-width: 150px;
+    }
+
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">🛍️ Checkout — Order #{{ order.pk }}</h1>
+</div>
+
+<div class="order-header">
+    <div class="order-number">#{{ order.pk }}</div>
+    <div class="order-info">
+        <div class="order-info-label">Cashier</div>
+        <div class="order-info-value">{{ order.cashier }}</div>
+    </div>
+    <span class="order-status">📝 In Progress</span>
+</div>
+
+{% if error %}
+<div class="alert-container">
+    <div class="error-alert">
+        <span>⚠️</span>
+        <span>{{ error }}</span>
+    </div>
+</div>
+{% endif %}
+
+<!-- Items Section -->
+<div class="items-section">
+    <div class="items-header">
+        <div>Product</div>
+        <div>Qty</div>
+        <div>Unit Price</div>
+        <div>Subtotal</div>
+        <div></div>
+    </div>
+    {% for item in items %}
+    <div class="items-list">
+        <div class="item-product-name">{{ item.product.name }}</div>
+        <div class="item-quantity">{{ item.quantity }}</div>
+        <div class="item-price">${{ item.unit_price }}</div>
+        <div class="item-subtotal">${{ item.subtotal }}</div>
+        <div></div>
+    </div>
+    {% empty %}
+    <div class="items-empty">📭 No items added yet. Add products below.</div>
+    {% endfor %}
+</div>
+
+<!-- Order Summary -->
+<div class="order-summary">
+    <div class="summary-row">
+        <span class="summary-label">Items Count</span>
+        <span class="summary-value">{{ items|length }}</span>
+    </div>
+    <div class="summary-row">
+        <span class="summary-label">Subtotal (Before Discount)</span>
+        <span class="summary-value">${{ order.subtotal|floatformat:2 }}</span>
+    </div>
+    {% if discount %}
+    <div class="summary-row" style="color: var(--success);">
+        <span class="summary-label" style="color: var(--success);">💰 Discount Applied</span>
+        <span class="summary-value" style="color: var(--success);">-${{ discount.amount }}</span>
+    </div>
+    {% endif %}
+    <div class="summary-total">
+        <div class="summary-row">
+            <span class="summary-label">Order Total</span>
+            <span class="summary-value">${{ order.total|floatformat:2 }}</span>
+        </div>
+    </div>
+</div>
+
+<!-- Discount Section -->
+{% if item_form %}
+<div class="discount-section {% if not discount %}empty{% endif %}">
+    <div class="discount-title">
+        💰 Discount Management
+    </div>
+
+    {% if discount %}
+    <div class="discount-applied">
+        <div class="discount-applied-header">
+            <div>
+                <div class="discount-applied-label">{{ discount.description }}</div>
+                <div class="discount-applied-value">-${{ discount.amount }}</div>
+                <div class="discount-applied-description">Applied to this order</div>
+            </div>
+            <form method="post" style="display: inline;">
+                {% csrf_token %}
+                <button class="discount-remove-btn" name="remove_discount" type="submit">
+                    ✕ Remove
+                </button>
+            </form>
+        </div>
+    </div>
+    {% else %}
+    <p style="color: var(--text-gray); margin-bottom: 16px;">No discount applied yet. Add one below to reduce the order total.</p>
+    {% endif %}
+
+    <!-- Add/Edit Discount Form -->
+    <form method="post">
+        {% csrf_token %}
+        <div class="discount-form-fields">
+            <div class="form-group">
+                <label>{{ discount_form.description.label }}</label>
+                {{ discount_form.description }}
+            </div>
+            <div class="form-group discount-amount-input">
+                <label>{{ discount_form.amount.label }}</label>
+                {{ discount_form.amount }}
+            </div>
+        </div>
+        {% if discount_form.non_field_errors %}
+        <div class="error-alert" style="margin-bottom: 12px;">
+            {% for error in discount_form.non_field_errors %}
+            <span>{{ error }}</span>
+            {% endfor %}
+        </div>
+        {% endif %}
+        <button class="btn btn-warning" name="add_discount" type="submit" style="width: 100%;">
+            <span>💰</span> {% if discount %}Update{% else %}Apply{% endif %} Discount
+        </button>
+    </form>
+</div>
+{% endif %}
+
+{% if item_form %}
+<!-- Add Item Form -->
+<div class="add-item-form">
+    <div class="add-item-title">➕ Add Product to Order</div>
+    <form method="post">
+        {% csrf_token %}
+        <div class="form-fields-row">
+            {% for field in item_form %}
+            <div class="form-group">
+                <label>{{ field.label }}</label>
+                {{ field }}
+                {% if field.errors %}
+                <div class="error-alert" style="margin-top: 8px; background: transparent; border: none; color: var(--danger);">
+                    {% for error in field.errors %}
+                    <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        <div class="form-actions">
+            <button class="btn btn-success" type="submit">
+                <span>✓</span> Add Item
+            </button>
+        </div>
+    </form>
+</div>
+
+<!-- Checkout Actions -->
+<div class="checkout-actions">
+    <form method="post" style="flex: 1;">
+        {% csrf_token %}
+        <button class="btn btn-primary" name="mark_paid" type="submit" style="width: 100%; padding: 14px 24px; font-size: 1.05em;">
+            <span>💳</span> Complete Payment
+        </button>
+    </form>
+    <form method="post" style="flex: 1;">
+        {% csrf_token %}
+        <button class="btn btn-danger" name="cancel_order" type="submit" style="width: 100%; padding: 14px 24px; font-size: 1.05em;">
+            <span>✕</span> Cancel Order
+        </button>
+    </form>
+</div>
+{% endif %}
+{% endblock %}
