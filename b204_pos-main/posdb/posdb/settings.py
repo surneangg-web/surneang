@@ -26,7 +26,7 @@ SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-4kqawvy$b^$$y&
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True  # Set to True for local development; use environment variable for production
 
-ALLOWED_HOSTS = ['surneang.pythonanywhere.com', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['surneang.eu.pythonanywhere.com', 'localhost', '127.0.0.1']
 #ALLOWED_HOSTS = []
 #ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
 
