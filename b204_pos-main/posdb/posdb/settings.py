@@ -132,8 +132,8 @@ LOGOUT_REDIRECT_URL = '/accounts/login/'   # after logout → back to login page
 #   (log out)  →  /accounts/login/
 
 CSRF_TRUSTED_ORIGINS = [
-    'https://surneang.pythonanywhere.com',
-    'http://surneang.pythonanywhere.com',
+    'https://surneang.eu.pythonanywhere.com.com',
+    'http://surneang.eu.pythonanywhere.com.com',
 ]
 
 SECURE_BROWSER_XSS_FILTER = True
